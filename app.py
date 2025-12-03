@@ -20,6 +20,10 @@ import datetime
 # Load environment variables
 load_dotenv()
 
+# Load from Streamlit secrets if not in env (for Cloud deployment)
+if "GOOGLE_API_KEY" not in os.environ and "GOOGLE_API_KEY" in st.secrets:
+    os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
+
 # Custom CSS for "Bible Gateway" Style Interface
 st.markdown("""
 <style>
