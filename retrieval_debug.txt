@@ -1,0 +1,29 @@
+Starting retrieval check...
+
+Checking retrieval...
+Query: தமிழ் விவிலியத்தின் வரலாறு
+
+Checking sources in DB...
+Unique sources found: 66
+FAILURE: 'Viviliya Thedal.pdf' is NOT in the DB.
+Sources: ['2 John.json', 'Revelation.json', '1 Kings.json', '2 Timothy.json', 'Nehemiah.json', 'Titus.json', 'Micah.json', '1 Corinthians.json', 'Luke.json', 'Proverbs.json']...
+
+Result 1:
+1 நாளாகமம்  (1 Chronicles) 15:27 - தாவீதும், பெட்டியைச் சுமக்கிற சகல லேவியரும், பாடகரும், பாடகரின் வேலையை விசாரிக்கிற தலைவனாகிய கெனானியாவும், மெல்லிய புடவையான சால்வைகளைத் தரித்திருந்தார்கள்; தாவீது சணல்நூல் ஏபோத்தைத் தரித்திருந்தான்.
+Metadata: {'verse': '27', 'book': '1 Chronicles', 'chapter': '15', 'type': 'bible', 'source': '1 Chronicles.json'}
+
+Result 2:
+1 நாளாகமம்  (1 Chronicles) 16:42 - பூரிகைகளையும் கைத்தாளங்களையும் தேவனைப் பாடுகிறதற்குரிய கீதவாத்தியங்களையும் தொனிக்கச்செய்யவும் அவர்களுடன் ஏமானையும் எதித்தூனையும் வைத்து, எதித்தூனின் குமாரரை வாசல்காக்கிறவர்களாகக் கட்டளையிட்டான்.
+Metadata: {'book': '1 Chronicles', 'type': 'bible', 'chapter': '16', 'verse': '42', 'source': '1 Chronicles.json'}
+
+Result 3:
+1 நாளாகமம்  (1 Chronicles) 22:2 - பின்பு தாவீது இஸ்ரவேல் தேசத்திலிருக்கிற அந்நியஜாதியாரைக் கூடிவரச்செய்து, தேவனுடைய ஆலயத்தைக் கட்டுகிறதற்கான கல்லுகளை வெட்டிப் பணிப்படுத்தும் கல்தச்சரை ஏற்படுத்தினான்.
+Metadata: {'verse': '2', 'type': 'bible', 'chapter': '22', 'source': '1 Chronicles.json', 'book': '1 Chronicles'}
+
+Result 4:
+1 நாளாகமம்  (1 Chronicles) 17:1 - தாவீது தன் வீட்டிலே வாசமாயிருக்கிறபோது, அவன் தீர்க்கதரிசியாகிய நாத்தானை நோக்கி: பாரும், நான் கேதுருமரவீட்டிலே வாசம்பண்ணுகிறேன்; கர்த்தருடைய உடன்படிக்கைப் பெட்டியோ திரைகளின்கீழ் இருக்கிறது என்றான்.
+Metadata: {'source': '1 Chronicles.json', 'type': 'bible', 'chapter': '17', 'verse': '1', 'book': '1 Chronicles'}
+
+Result 5:
+1 நாளாகமம்  (1 Chronicles) 9:31 - லேவியரில் கோராகியனான சல்லுூமின் மூத்த குமாரனாகிய மத்தித்தியாவுக்குப் பலகாரம் சுடுகிற வேலையின் விசாரிப்பு ஒப்புவித்திருந்தது.
+Metadata: {'verse': '31', 'book': '1 Chronicles', 'type': 'bible', 'source': '1 Chronicles.json', 'chapter': '9'}
