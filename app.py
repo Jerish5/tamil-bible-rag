@@ -429,4 +429,15 @@ if "GOOGLE_API_KEY" in os.environ:
                 except Exception as e:
                     st.error(f"An error occurred: {e}")
 else:
-    st.error("GOOGLE_API_KEY not found. Please check your .env file or Streamlit secrets.")
+    st.error("⚠️ GOOGLE_API_KEY not found!")
+    st.markdown("""
+    ### How to fix this on Streamlit Cloud:
+    1. Click **Manage App** in the bottom right corner.
+    2. Click the **three dots** (⋮) next to your app name and select **Settings**.
+    3. Go to the **Secrets** section.
+    4. Paste your API key in this format:
+    ```toml
+    GOOGLE_API_KEY = "your_actual_api_key_here"
+    ```
+    5. Click **Save**.
+    """)
