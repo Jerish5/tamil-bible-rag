@@ -212,6 +212,8 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
+st.markdown('</div>', unsafe_allow_html=True)
+
 # Initialize Embeddings (must match ingest.py)
 @st.cache_resource
 def get_embeddings():
@@ -422,3 +424,5 @@ if "GOOGLE_API_KEY" in os.environ:
                             
                 except Exception as e:
                     st.error(f"An error occurred: {e}")
+else:
+    st.error("GOOGLE_API_KEY not found. Please check your .env file or Streamlit secrets.")
