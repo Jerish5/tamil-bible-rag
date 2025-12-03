@@ -17,58 +17,119 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Custom CSS for Premium Design
+# Custom CSS for Dark Premium Design
 st.markdown("""
 <style>
-    /* Main Background and Font */
+    /* Main Background */
     .stApp {
-        background-color: #f8f9fa;
+        background: linear-gradient(135deg, #2e003e 0%, #8b005d 100%);
         font-family: 'Inter', sans-serif;
+        color: white;
     }
     
-    /* Header Styling */
-    .main-header {
-        text-align: center;
-        padding: 2rem 0;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        font-size: 3rem;
-        font-weight: 800;
-        margin-bottom: 1rem;
+    /* Hide Default Header and Sidebar */
+    header[data-testid="stHeader"] {
+        background: transparent;
+    }
+    [data-testid="stSidebar"] {
+        display: none;
     }
     
-    /* Subheader */
-    .sub-header {
-        text-align: center;
-        color: #555;
-        font-size: 1.2rem;
-        margin-bottom: 2rem;
-    }
-    
-    /* Chat Message Styling */
-    .stChatMessage {
-        background-color: white;
+    /* Custom Chat Container */
+    .chat-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: #000000;
         border-radius: 15px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        padding: 1rem;
-        margin-bottom: 1rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        overflow: hidden;
+        min-height: 80vh;
+        display: flex;
+        flex-direction: column;
     }
     
-    /* Source Card Styling */
+    /* Chat Header */
+    .chat-header {
+        background-color: #111;
+        padding: 15px 20px;
+        border-bottom: 1px solid #333;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .bot-avatar {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(45deg, #00b4db, #0083b0);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: white;
+        box-shadow: 0 0 10px rgba(0, 180, 219, 0.5);
+    }
+    
+    .bot-info h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: white;
+        font-weight: 600;
+    }
+    
+    .bot-info p {
+        margin: 0;
+        font-size: 0.8rem;
+        color: #00ff88;
+    }
+    
+    /* Chat Messages */
+    .stChatMessage {
+        background-color: transparent !important;
+    }
+    
+    div[data-testid="stChatMessageContent"] {
+        background-color: #1a1a1a !important;
+        color: #e0e0e0 !important;
+        border-radius: 15px !important;
+        padding: 15px !important;
+        border: 1px solid #333;
+    }
+    
+    /* User Message Specifics */
+    div[data-testid="stChatMessageContent"][aria-label="user"] {
+        background-color: #2d2d2d !important;
+    }
+
+    /* Input Area Styling */
+    .stChatInputContainer {
+        padding-bottom: 20px;
+    }
+    
+    div[data-testid="stChatInput"] {
+        background-color: #1a1a1a !important;
+        border-color: #333 !important;
+        color: white !important;
+        border-radius: 30px !important;
+    }
+    
+    /* Logout Button */
+    .logout-btn {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+    }
+    
+    /* Source Card */
     .source-card {
-        background-color: #f1f3f5;
-        border-left: 4px solid #764ba2;
+        background-color: #222;
+        border-left: 3px solid #00b4db;
         padding: 10px;
         margin-top: 10px;
-        border-radius: 5px;
-        font-size: 0.9rem;
-    }
-    
-    /* Sidebar Styling */
-    [data-testid="stSidebar"] {
-        background-color: #ffffff;
-        border-right: 1px solid #eee;
+        font-size: 0.85rem;
+        color: #ccc;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -96,26 +157,23 @@ if not st.session_state.logged_in:
                     st.error("Incorrect username or password")
     st.stop()
 
-# Title and Header
-st.markdown('<h1 class="main-header">📖 Tamil Bible RAG</h1>', unsafe_allow_html=True)
-st.markdown('<p class="sub-header">Ask questions about the Holy Bible in Tamil or English. Powered by AI & Scripture.</p>', unsafe_allow_html=True)
-
-# Sidebar
-with st.sidebar:
-    if st.button("🚪 Logout", use_container_width=True):
+# Logout Button (Top Right)
+col1, col2 = st.columns([6, 1])
+with col2:
+    if st.button("Logout", key="logout_top"):
         st.session_state.logged_in = False
         st.rerun()
-        
-    st.header("⚙️ Settings")
-    if "GOOGLE_API_KEY" in os.environ:
-        st.success("✅ API Key Active")
-    else:
-        st.error("⚠️ API Key Missing")
-        st.info("Please add `GOOGLE_API_KEY` to your Streamlit Secrets.")
-    
-    st.markdown("---")
-    st.markdown("### About")
-    st.info("This AI assistant uses the **Tamil Common Bible** and **Gemini Pro** to answer your spiritual queries. It falls back to web search if the answer isn't in the Bible.")
+
+# Custom Header (Simulating the image)
+st.markdown("""
+<div class="chat-header">
+    <div class="bot-avatar">✝️</div>
+    <div class="bot-info">
+        <h3>Bible Bot</h3>
+        <p>Active Now</p>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # Initialize Chat History
 if "messages" not in st.session_state:
