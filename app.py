@@ -24,129 +24,7 @@ load_dotenv()
 if "GOOGLE_API_KEY" not in os.environ and "GOOGLE_API_KEY" in st.secrets:
     os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
 
-# Custom CSS for "Bible Gateway" Style Interface
-st.markdown("""
-<style>
-    /* Global Styles */
-    .stApp {
-        background-color: #fcfcfc;
-        font-family: 'Merriweather', 'Georgia', serif;
-        color: #333;
-    }
-    
-    /* Hide Default Header/Sidebar */
-    header[data-testid="stHeader"] {
-        background: white;
-        border-bottom: 1px solid #eee;
-    }
-    [data-testid="stSidebar"] {
-        display: none;
-    }
-    
-    /* Navbar Styling */
-    .navbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem 2rem;
-        background: white;
-        border-bottom: 1px solid #e0e0e0;
-        margin-bottom: 2rem;
-    }
-    
-    .logo {
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: #8B0000; /* Dark Red like traditional Bibles */
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    /* Chat Container */
-    .main-container {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 0 20px;
-    }
-    
-    /* Message Styling */
-    .stChatMessage {
-        background-color: transparent;
-        border-bottom: 1px solid #f0f0f0;
-        padding: 1.5rem 0;
-    }
-    
-    div[data-testid="stChatMessageContent"] {
-        background-color: transparent !important;
-        color: #333 !important;
-        font-size: 1.1rem;
-        line-height: 1.6;
-    }
-    
-    /* Assistant Message Specifics */
-    div[data-testid="stChatMessageContent"][aria-label="assistant"] {
-        font-family: 'Merriweather', serif;
-    }
-    
-    /* User Message Specifics */
-    div[data-testid="stChatMessageContent"][aria-label="user"] {
-        background-color: #f5f5f5 !important;
-        border-radius: 10px;
-        padding: 1rem !important;
-        font-family: 'Inter', sans-serif; /* Sans-serif for user input */
-    }
-    
-    /* Chat Input Styling */
-    div[data-testid="stChatInput"] {
-        border-radius: 50px !important;
-        border: 1px solid #ddd !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
-        background: white !important;
-    }
-    
-    /* Ensure bottom container is visible */
-    [data-testid="stBottom"] {
-        background-color: transparent;
-        z-index: 99999;
-    }
-    
-    /* Add padding to bottom of main container so content isn't hidden behind input */
-    .main-container {
-        padding-bottom: 100px;
-    }
-    
-    /* Verse Card */
-    .source-card {
-        background-color: #fff9f0; /* Warm paper color */
-        border-left: 4px solid #8B0000;
-        padding: 15px;
-        margin-top: 15px;
-        font-family: 'Merriweather', serif;
-        font-style: italic;
-        color: #555;
-    }
-    
-    /* Login Form Clean Style */
-    div[data-testid="stForm"] {
-        background-color: white;
-        padding: 40px;
-        border-radius: 8px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        border: 1px solid #eee;
-    }
-    
-    h1, h2, h3 {
-        color: #333 !important;
-    }
-    
-    .stButton button {
-        background-color: #8B0000 !important;
-        color: white !important;
-        border-radius: 5px !important;
-    }
-</style>
-""", unsafe_allow_html=True)
+# Custom CSS removed for default Streamlit UI
 
 # Login Logic
 if "logged_in" not in st.session_state:
@@ -165,34 +43,25 @@ if not st.session_state.logged_in:
         st.session_state.logged_in = True
 
 if not st.session_state.logged_in:
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([1, 1.5, 1])
-    with col2:
-        st.markdown("<h1 style='text-align: center; color: #8B0000;'>Bible RAG Login</h1>", unsafe_allow_html=True)
-        with st.form("login_form"):
-            username = st.text_input("Email")
-            password = st.text_input("Password", type="password")
-            remember_me = st.checkbox("Remember Me")
-            submitted = st.form_submit_button("Sign In", use_container_width=True)
-            
-            if submitted:
-                if username == "matv001@madhatv.in" and password == "matv@001":
-                    st.session_state.logged_in = True
-                    if remember_me:
-                        cookie_manager.set("bible_rag_login", "true", expires_at=datetime.datetime.now() + datetime.timedelta(days=30))
-                    st.rerun()
-                else:
-                    st.error("Invalid credentials")
+    st.title("Bible RAG Login")
+    with st.form("login_form"):
+        username = st.text_input("Email")
+        password = st.text_input("Password", type="password")
+        remember_me = st.checkbox("Remember Me")
+        submitted = st.form_submit_button("Sign In")
+        
+        if submitted:
+            if username == "matv001@madhatv.in" and password == "matv@001":
+                st.session_state.logged_in = True
+                if remember_me:
+                    cookie_manager.set("bible_rag_login", "true", expires_at=datetime.datetime.now() + datetime.timedelta(days=30))
+                st.rerun()
+            else:
+                st.error("Invalid credentials")
     st.stop()
 
-# Navbar / Header
-st.markdown("""
-<div class="navbar">
-    <div class="logo">
-        <span>📖</span> Tamil Bible RAG
-    </div>
-</div>
-""", unsafe_allow_html=True)
+# Header
+st.title("📖 Tamil Bible RAG")
 
 # Logout Button (Top Right)
 col1, col2 = st.columns([8, 1])
@@ -209,14 +78,14 @@ if "messages" not in st.session_state:
     ]
 
 # Main Chat Container
-st.markdown('<div class="main-container">', unsafe_allow_html=True)
+# st.markdown('<div class="main-container">', unsafe_allow_html=True)
 
 # Display Chat History
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-st.markdown('</div>', unsafe_allow_html=True)
+
 
 # Initialize Embeddings (must match ingest.py)
 @st.cache_resource
@@ -352,15 +221,15 @@ if "GOOGLE_API_KEY" in os.environ:
                             raise ValueError("Answer not found in context")
 
                         # 1. Display Summary
-                        st.markdown(f"### 💡 சுருக்கம் (Summary)")
+                        st.subheader("💡 சுருக்கம் (Summary)")
                         st.info(data.get("summary", ""))
                         
                         # 2. Display Explanation
-                        st.markdown(f"### 📝 விளக்கம் (Explanation)")
-                        st.markdown(data.get("explanation", ""))
+                        st.subheader("📝 விளக்கம் (Explanation)")
+                        st.write(data.get("explanation", ""))
                         
                         # 3. Display Verses (from JSON or Context)
-                        st.markdown(f"### 📖 இறைவார்த்தைகள் (Verses)")
+                        st.subheader("📖 இறைவார்த்தைகள் (Verses)")
                         
                         # Prefer verses from JSON if available and valid, otherwise fallback to source docs
                         json_verses = data.get("verses", [])
@@ -368,26 +237,19 @@ if "GOOGLE_API_KEY" in os.environ:
                             for verse in json_verses:
                                 ref = verse.get("reference", "Unknown")
                                 text = verse.get("text", "")
-                                st.markdown(f"""
-                                <div class="source-card">
-                                    <strong>{ref}</strong><br>{text}
-                                </div>
-                                """, unsafe_allow_html=True)
+                                st.markdown(f"**{ref}**")
+                                st.markdown(f"> {text}")
                         else:
                             # Fallback to source docs if JSON verses are empty
                             for doc in source_docs:
                                 content = doc.page_content
                                 clean_content = content.split(" - ")[-1] if " - " in content else content
-                                st.markdown(f"""
-                                <div class="source-card">
-                                    {clean_content}
-                                </div>
-                                """, unsafe_allow_html=True)
+                                st.markdown(f"> {clean_content}")
 
                         # 4. Display Suggestions
                         suggestions = data.get("suggestions", [])
                         if suggestions:
-                            st.markdown("### 🔍 அடுத்து என்ன கேட்கலாம்? (Suggestions)")
+                            st.subheader("🔍 அடுத்து என்ன கேட்கலாம்? (Suggestions)")
                             cols = st.columns(len(suggestions))
                             for i, suggestion in enumerate(suggestions):
                                 # Note: Buttons in chat history might not be clickable in the same way, 
