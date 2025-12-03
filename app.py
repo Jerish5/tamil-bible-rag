@@ -93,24 +93,18 @@ st.markdown("""
         font-family: 'Inter', sans-serif; /* Sans-serif for user input */
     }
     
-    /* Fixed Input Area */
-    .stChatInputContainer {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        padding: 20px;
-        background: white;
-        z-index: 99999;
-        border-top: 1px solid #eee;
-    }
-    
+    /* Chat Input Styling */
     div[data-testid="stChatInput"] {
-        max-width: 900px;
-        margin: 0 auto;
         border-radius: 50px !important;
         border: 1px solid #ddd !important;
         box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+        background: white !important;
+    }
+    
+    /* Ensure bottom container is visible */
+    [data-testid="stBottom"] {
+        background-color: transparent;
+        z-index: 99999;
     }
     
     /* Add padding to bottom of main container so content isn't hidden behind input */
