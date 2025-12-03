@@ -76,6 +76,8 @@ if not os.path.exists(DB_PATH):
 
 if not os.path.exists(DB_PATH):
     st.error("Vector Database not found. Please run `ingest.py` first.")
+    st.write("Current working directory:", os.getcwd())
+    st.write("Files in directory:", os.listdir("."))
     st.stop()
 
 vectorstore = Chroma(persist_directory=DB_PATH, embedding_function=embeddings)
