@@ -101,7 +101,7 @@ st.markdown("""
         right: 0;
         padding: 20px;
         background: white;
-        z-index: 1000;
+        z-index: 99999;
         border-top: 1px solid #eee;
     }
     
