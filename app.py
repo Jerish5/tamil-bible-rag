@@ -329,7 +329,7 @@ if "GOOGLE_API_KEY" in os.environ:
                         sources_text = "\n\n*Source: Web Search*"
                     else:
                         # Format sources
-                        sources_text = "\n\n**Source Verses:**\n"
+                        sources_text = ""
                         for i, doc in enumerate(source_docs):
                             book = doc.metadata.get('book', '?')
                             chapter = doc.metadata.get('chapter', '?')
@@ -337,11 +337,14 @@ if "GOOGLE_API_KEY" in os.environ:
                             content = doc.page_content
                             # Clean up content for display
                             clean_content = content.split(" - ")[-1] if " - " in content else content
-                            sources_text += f"> **{book} {chapter}:{verse}**: {clean_content}\n\n"
+                            sources_text += f"""<div class="source-card">
+                            <strong>{book} {chapter}:{verse}</strong><br>
+                            {clean_content}
+                            </div>"""
 
                     # Display Answer
                     full_response = final_response + sources_text
-                    st.markdown(full_response)
+                    st.markdown(full_response, unsafe_allow_html=True)
                     
                     # Add assistant response to history
                     st.session_state.messages.append({"role": "assistant", "content": full_response})
