@@ -25,15 +25,13 @@ st.title("📖 Tamil Bible RAG System")
 st.markdown("Ask questions about the Bible in Tamil or English. If the answer isn't in the Bible, I'll search the web!")
 
 # Sidebar for API Key
+# Sidebar
 with st.sidebar:
     st.header("Settings")
-    api_key = st.text_input("Google Gemini API Key", type="password")
-    if api_key:
-        os.environ["GOOGLE_API_KEY"] = api_key
-    elif "GOOGLE_API_KEY" in os.environ:
-        st.success("API Key found in environment.")
+    if "GOOGLE_API_KEY" in os.environ:
+        st.success("API Key loaded from secrets.")
     else:
-        st.warning("Please enter your Google Gemini API Key to generate answers.")
+        st.error("API Key missing. Please add it to Streamlit Secrets.")
 
 # Initialize Embeddings (must match ingest.py)
 @st.cache_resource
@@ -174,5 +172,4 @@ if "GOOGLE_API_KEY" in os.environ:
                             
             except Exception as e:
                 st.error(f"An error occurred: {e}")
-else:
-    st.info("Please provide an API Key to start asking questions.")
+
