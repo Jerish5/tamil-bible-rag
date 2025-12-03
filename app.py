@@ -24,6 +24,10 @@ load_dotenv()
 if "GOOGLE_API_KEY" not in os.environ and "GOOGLE_API_KEY" in st.secrets:
     os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
 
+# Fallback to hardcoded key (User Request) - NOT RECOMMENDED FOR PRODUCTION
+if "GOOGLE_API_KEY" not in os.environ:
+    os.environ["GOOGLE_API_KEY"] = "AIzaSyAbcSQQqu2p4ZhVewc0bdLo2Asjay6t62k"
+
 # Custom CSS removed for default Streamlit UI
 
 # Login Logic
