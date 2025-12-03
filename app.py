@@ -17,74 +17,91 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Page Config
-st.set_page_config(page_title="Tamil Bible RAG", page_icon="📖", layout="wide")
+# Custom CSS for Premium Design
+st.markdown("""
+<style>
+    /* Main Background and Font */
+    .stApp {
+        background-color: #f8f9fa;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    /* Header Styling */
+    .main-header {
+        text-align: center;
+        padding: 2rem 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+    }
+    
+    /* Subheader */
+    .sub-header {
+        text-align: center;
+        color: #555;
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+    }
+    
+    /* Chat Message Styling */
+    .stChatMessage {
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    /* Source Card Styling */
+    .source-card {
+        background-color: #f1f3f5;
+        border-left: 4px solid #764ba2;
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 5px;
+        font-size: 0.9rem;
+    }
+    
+    /* Sidebar Styling */
+    [data-testid="stSidebar"] {
+        background-color: #ffffff;
+        border-right: 1px solid #eee;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # Title and Header
-st.title("📖 Tamil Bible RAG System")
-st.markdown("Ask questions about the Bible in Tamil or English. If the answer isn't in the Bible, I'll search the web!")
+st.markdown('<h1 class="main-header">📖 Tamil Bible RAG</h1>', unsafe_allow_html=True)
+st.markdown('<p class="sub-header">Ask questions about the Holy Bible in Tamil or English. Powered by AI & Scripture.</p>', unsafe_allow_html=True)
 
-# Sidebar for API Key
 # Sidebar
 with st.sidebar:
-    st.header("Settings")
+    st.header("⚙️ Settings")
     if "GOOGLE_API_KEY" in os.environ:
-        st.success("API Key loaded from secrets.")
+        st.success("✅ API Key Active")
     else:
-        st.error("API Key missing. Please add it to Streamlit Secrets.")
-
-# Initialize Embeddings (must match ingest.py)
-@st.cache_resource
-def get_embeddings():
-    return HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
-
-embeddings = get_embeddings()
-
-# Load Vector Store
-DB_PATH = "chroma_db"
-
-# Check if chroma_db exists
-if not os.path.exists(DB_PATH):
-    zip_path = "chroma_db.zip"
+        st.error("⚠️ API Key Missing")
+        st.info("Please add `GOOGLE_API_KEY` to your Streamlit Secrets.")
     
-    # Reassemble zip if it doesn't exist
-    if not os.path.exists(zip_path):
-        part1 = "chroma_db.zip.001"
-        if os.path.exists(part1):
-            with st.spinner("Reassembling database..."):
-                with open(zip_path, 'wb') as dest:
-                    part_num = 1
-                    while True:
-                        part_name = f"{zip_path}.{part_num:03d}"
-                        if not os.path.exists(part_name):
-                            break
-                        with open(part_name, 'rb') as source:
-                            dest.write(source.read())
-                        part_num += 1
-    
-    # Extract zip with path sanitization (fix Windows backslashes)
-    if os.path.exists(zip_path):
-        import zipfile
-        with st.spinner("Extracting database..."):
-            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                for member in zip_ref.infolist():
-                    # Fix Windows path separators for Linux
-                    member.filename = member.filename.replace('\\', '/')
-                    zip_ref.extract(member, ".")
-    else:
-        st.error("Vector Database not found. Please run `ingest.py` first.")
-        st.stop()
+    st.markdown("---")
+    st.markdown("### About")
+    st.info("This AI assistant uses the **Tamil Common Bible** and **Gemini Pro** to answer your spiritual queries. It falls back to web search if the answer isn't in the Bible.")
 
-if not os.path.exists(DB_PATH):
-    st.error(f"Vector Database still not found at {DB_PATH}.")
-    st.write("Current working directory:", os.getcwd())
-    st.write("Files in directory:", os.listdir("."))
-    st.stop()
+# Initialize Chat History
+if "messages" not in st.session_state:
+    st.session_state.messages = [
+        {"role": "assistant", "content": "வணக்கம்! நான் உங்கள் விவிலிய உதவியாளர். நீங்கள் என்ன தெரிந்து கொள்ள விரும்புகிறீர்கள்? (Hello! I am your Bible assistant. What would you like to know?)"}
+    ]
 
-vectorstore = Chroma(persist_directory=DB_PATH, embedding_function=embeddings)
-retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
+# Display Chat History
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-# QA Chain
+# QA Chain Setup
 if "GOOGLE_API_KEY" in os.environ:
     llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.3)
     
@@ -117,59 +134,69 @@ if "GOOGLE_API_KEY" in os.environ:
         chain_type_kwargs={"prompt": QA_CHAIN_PROMPT}
     )
 
-    # User Input
-    query = st.text_input("Enter your question:")
-    
-    if query:
-        with st.spinner("Searching Bible..."):
-            try:
-                result = qa_chain({"query": query})
-                answer = result["result"]
-                source_docs = result["source_documents"]
-                
-                # Check for "I don't know" or "Not found" to trigger web search
-                lower_answer = answer.lower()
-                triggers = [
-                    "don't know", "do not know", "not found", "not mentioned",
-                    "தெரியவில்லை", "தகவல் இல்லை", "குறிப்பிடப்படவில்லை", "பதில் இல்லை", "இல்லை"
-                ]
-                
-                if any(trigger in lower_answer for trigger in triggers):
-                    st.warning("Answer not found in Bible context. Searching the web...")
+    # Chat Input
+    if prompt := st.chat_input("Ask a question..."):
+        # Add user message to history
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        # Generate Answer
+        with st.chat_message("assistant"):
+            with st.spinner("Searching the Scriptures..."):
+                try:
+                    result = qa_chain({"query": prompt})
+                    answer = result["result"]
+                    source_docs = result["source_documents"]
                     
-                    search = DuckDuckGoSearchRun()
-                    with st.spinner("Searching the web..."):
-                        web_results = search.run(query)
+                    # Check for fallback triggers
+                    lower_answer = answer.lower()
+                    triggers = [
+                        "don't know", "do not know", "not found", "not mentioned",
+                        "தெரியவில்லை", "தகவல் இல்லை", "குறிப்பிடப்படவில்லை", "பதில் இல்லை", "இல்லை"
+                    ]
                     
-                    # Re-prompt with web results
-                    web_template = """You are a helpful assistant. The user asked a question that wasn't found in the Bible database.
-                    Here is some information from the web:
-                    {web_context}
+                    final_response = answer
+                    sources_text = ""
+
+                    if any(trigger in lower_answer for trigger in triggers):
+                        st.warning("Answer not found in Bible context. Searching the web...")
+                        
+                        search = DuckDuckGoSearchRun()
+                        web_results = search.run(prompt)
+                        
+                        web_template = """You are a helpful assistant. The user asked a question that wasn't found in the Bible database.
+                        Here is some information from the web:
+                        {web_context}
+                        
+                        Question: {question}
+                        
+                        Answer based on the web info (cite source as 'Web Search'). Answer in the SAME language as the question.
+                        **CRITICAL**: All Tamil answers MUST be in **Roman Catholic Tamil style** (e.g., use 'Thiruviliyam' for Bible, and standard Catholic terminology)."""
+                        
+                        prompt_web = PromptTemplate.from_template(web_template)
+                        chain_web = LLMChain(llm=llm, prompt=prompt_web)
+                        final_response = chain_web.run(web_context=web_results, question=prompt)
+                        sources_text = "\n\n*Source: Web Search*"
+                    else:
+                        # Format sources
+                        sources_text = "\n\n**Source Verses:**\n"
+                        for i, doc in enumerate(source_docs):
+                            book = doc.metadata.get('book', '?')
+                            chapter = doc.metadata.get('chapter', '?')
+                            verse = doc.metadata.get('verse', '?')
+                            content = doc.page_content
+                            # Clean up content for display
+                            clean_content = content.split(" - ")[-1] if " - " in content else content
+                            sources_text += f"> **{book} {chapter}:{verse}**: {clean_content}\n\n"
+
+                    # Display Answer
+                    full_response = final_response + sources_text
+                    st.markdown(full_response)
                     
-                    Question: {question}
-                    
-                    Answer based on the web info (cite source as 'Web Search'). Answer in the SAME language as the question.
-                    **CRITICAL**: All Tamil answers MUST be in **Roman Catholic Tamil style** (e.g., use 'Thiruviliyam' for Bible, and standard Catholic terminology)."""
-                    
-                    prompt_web = PromptTemplate.from_template(web_template)
-                    chain_web = LLMChain(llm=llm, prompt=prompt_web)
-                    
-                    with st.spinner("Generating answer from web..."):
-                        web_response = chain_web.run(web_context=web_results, question=query)
-                    
-                    st.markdown("### Web Answer")
-                    st.write(web_response)
-                    
-                else:
-                    st.markdown("### Answer")
-                    st.write(answer)
-                    
-                    st.markdown("---")
-                    st.markdown("### Source Verses")
-                    for i, doc in enumerate(source_docs):
-                        with st.expander(f"Source {i+1} ({doc.metadata.get('book', '?')} {doc.metadata.get('chapter', '?')}:{doc.metadata.get('verse', '?')})"):
-                            st.write(doc.page_content)
+                    # Add assistant response to history
+                    st.session_state.messages.append({"role": "assistant", "content": full_response})
                             
-            except Exception as e:
-                st.error(f"An error occurred: {e}")
+                except Exception as e:
+                    st.error(f"An error occurred: {e}")
 
