@@ -45,10 +45,11 @@ embeddings = get_embeddings()
 # Load Vector Store
 DB_PATH = "chroma_db"
 
-# Check if chroma_db exists, if not, unzip it
+# Check if chroma_db exists
 if not os.path.exists(DB_PATH):
     zip_path = "chroma_db.zip"
-    # Check for split files
+    
+    # Reassemble zip if it doesn't exist
     if not os.path.exists(zip_path):
         part1 = "chroma_db.zip.001"
         if os.path.exists(part1):
@@ -63,19 +64,21 @@ if not os.path.exists(DB_PATH):
                             dest.write(source.read())
                         part_num += 1
     
+    # Extract zip with path sanitization (fix Windows backslashes)
     if os.path.exists(zip_path):
         import zipfile
         with st.spinner("Extracting database..."):
             with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                zip_ref.extractall(".")
+                for member in zip_ref.infolist():
+                    # Fix Windows path separators for Linux
+                    member.filename = member.filename.replace('\\', '/')
+                    zip_ref.extract(member, ".")
     else:
         st.error("Vector Database not found. Please run `ingest.py` first.")
-        st.write("Current working directory:", os.getcwd())
-        st.write("Files in directory:", os.listdir("."))
         st.stop()
 
 if not os.path.exists(DB_PATH):
-    st.error("Vector Database not found. Please run `ingest.py` first.")
+    st.error(f"Vector Database still not found at {DB_PATH}.")
     st.write("Current working directory:", os.getcwd())
     st.write("Files in directory:", os.listdir("."))
     st.stop()
