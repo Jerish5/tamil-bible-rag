@@ -73,12 +73,39 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Login Logic
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+if not st.session_state.logged_in:
+    st.markdown('<h1 class="main-header">🔒 Login Required</h1>', unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        with st.form("login_form"):
+            st.markdown("### Please Sign In")
+            username = st.text_input("Username / Email")
+            password = st.text_input("Password", type="password")
+            submitted = st.form_submit_button("Login", use_container_width=True)
+            
+            if submitted:
+                if username == "matv001@madhatv.in" and password == "matv@001":
+                    st.session_state.logged_in = True
+                    st.rerun()
+                else:
+                    st.error("Incorrect username or password")
+    st.stop()
+
 # Title and Header
 st.markdown('<h1 class="main-header">📖 Tamil Bible RAG</h1>', unsafe_allow_html=True)
 st.markdown('<p class="sub-header">Ask questions about the Holy Bible in Tamil or English. Powered by AI & Scripture.</p>', unsafe_allow_html=True)
 
 # Sidebar
 with st.sidebar:
+    if st.button("🚪 Logout", use_container_width=True):
+        st.session_state.logged_in = False
+        st.rerun()
+        
     st.header("⚙️ Settings")
     if "GOOGLE_API_KEY" in os.environ:
         st.success("✅ API Key Active")
