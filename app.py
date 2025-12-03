@@ -155,7 +155,7 @@ if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
 # Initialize Cookie Manager
-@st.cache_resource(experimental_allow_widgets=True)
+@st.cache_resource
 def get_manager():
     return stx.CookieManager()
 
