@@ -101,6 +101,57 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
+# Initialize Embeddings (must match ingest.py)
+@st.cache_resource
+def get_embeddings():
+    return HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+
+embeddings = get_embeddings()
+
+# Load Vector Store
+DB_PATH = "chroma_db"
+
+# Check if chroma_db exists
+if not os.path.exists(DB_PATH):
+    zip_path = "chroma_db.zip"
+    
+    # Reassemble zip if it doesn't exist
+    if not os.path.exists(zip_path):
+        part1 = "chroma_db.zip.001"
+        if os.path.exists(part1):
+            with st.spinner("Reassembling database..."):
+                with open(zip_path, 'wb') as dest:
+                    part_num = 1
+                    while True:
+                        part_name = f"{zip_path}.{part_num:03d}"
+                        if not os.path.exists(part_name):
+                            break
+                        with open(part_name, 'rb') as source:
+                            dest.write(source.read())
+                        part_num += 1
+    
+    # Extract zip with path sanitization (fix Windows backslashes)
+    if os.path.exists(zip_path):
+        import zipfile
+        with st.spinner("Extracting database..."):
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                for member in zip_ref.infolist():
+                    # Fix Windows path separators for Linux
+                    member.filename = member.filename.replace('\\', '/')
+                    zip_ref.extract(member, ".")
+    else:
+        st.error("Vector Database not found. Please run `ingest.py` first.")
+        st.stop()
+
+if not os.path.exists(DB_PATH):
+    st.error(f"Vector Database still not found at {DB_PATH}.")
+    st.write("Current working directory:", os.getcwd())
+    st.write("Files in directory:", os.listdir("."))
+    st.stop()
+
+vectorstore = Chroma(persist_directory=DB_PATH, embedding_function=embeddings)
+retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
+
 # QA Chain Setup
 if "GOOGLE_API_KEY" in os.environ:
     llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.3)
