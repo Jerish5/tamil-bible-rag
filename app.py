@@ -157,18 +157,18 @@ if "GOOGLE_API_KEY" in os.environ:
     - Do not include any markdown formatting (like ```json) outside the JSON object. Just return the raw JSON.
 
     **JSON Schema:**
-    {
+    {{
       "summary": "A 2-3 line concise answer in Tamil.",
       "explanation": "A detailed, multi-paragraph explanation based on the context. Use clear Tamil.",
       "verses": [
-         {"reference": "Book Chapter:Verse", "text": "Verse text in Tamil..."}
+         {{"reference": "Book Chapter:Verse", "text": "Verse text in Tamil..."}}
       ],
       "suggestions": [
          "Next question suggestion 1",
          "Next question suggestion 2",
          "Next question suggestion 3"
       ]
-    }
+    }}
 
     **Rules:**
     1. **Context Only**: Use ONLY the provided context to answer. If the answer is not in the context, set "summary" to "I don't know" and leave others empty.
