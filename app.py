@@ -131,6 +131,35 @@ st.markdown("""
         font-size: 0.85rem;
         color: #ccc;
     }
+
+    /* Fix Text Readability globally */
+    h1, h2, h3, p, label, .stMarkdown {
+        color: #ffffff !important;
+    }
+
+    /* Login Form Specifics */
+    div[data-testid="stForm"] {
+        background-color: rgba(0, 0, 0, 0.5);
+        padding: 30px;
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+
+    /* Input Fields - Make them white with black text for contrast */
+    input[type="text"], input[type="password"] {
+        color: #000000 !important;
+        background-color: #ffffff !important;
+        border-radius: 5px !important;
+    }
+    
+    /* Button Styling */
+    .stButton button {
+        background: linear-gradient(45deg, #00b4db, #0083b0) !important;
+        color: white !important;
+        border: none !important;
+        font-weight: bold !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
