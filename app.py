@@ -70,6 +70,8 @@ if not os.path.exists(DB_PATH):
                 zip_ref.extractall(".")
     else:
         st.error("Vector Database not found. Please run `ingest.py` first.")
+        st.write("Current working directory:", os.getcwd())
+        st.write("Files in directory:", os.listdir("."))
         st.stop()
 
 if not os.path.exists(DB_PATH):
