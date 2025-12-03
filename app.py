@@ -17,148 +17,120 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Custom CSS for Dark Premium Design
+# Custom CSS for "Bible Gateway" Style Interface
 st.markdown("""
 <style>
-    /* Main Background */
+    /* Global Styles */
     .stApp {
-        background: linear-gradient(135deg, #2e003e 0%, #8b005d 100%);
-        font-family: 'Inter', sans-serif;
-        color: white;
+        background-color: #fcfcfc;
+        font-family: 'Merriweather', 'Georgia', serif;
+        color: #333;
     }
     
-    /* Hide Default Header and Sidebar */
+    /* Hide Default Header/Sidebar */
     header[data-testid="stHeader"] {
-        background: transparent;
+        background: white;
+        border-bottom: 1px solid #eee;
     }
     [data-testid="stSidebar"] {
         display: none;
     }
     
-    /* Custom Chat Container */
-    .chat-container {
-        max-width: 800px;
+    /* Navbar Styling */
+    .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+        background: white;
+        border-bottom: 1px solid #e0e0e0;
+        margin-bottom: 2rem;
+    }
+    
+    .logo {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #8B0000; /* Dark Red like traditional Bibles */
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    /* Chat Container */
+    .main-container {
+        max-width: 900px;
         margin: 0 auto;
-        background-color: #000000;
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        overflow: hidden;
-        min-height: 80vh;
-        display: flex;
-        flex-direction: column;
+        padding: 0 20px;
     }
     
-    /* Chat Header */
-    .chat-header {
-        background-color: #111;
-        padding: 15px 20px;
-        border-bottom: 1px solid #333;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-    
-    .bot-avatar {
-        width: 40px;
-        height: 40px;
-        background: linear-gradient(45deg, #00b4db, #0083b0);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        color: white;
-        box-shadow: 0 0 10px rgba(0, 180, 219, 0.5);
-    }
-    
-    .bot-info h3 {
-        margin: 0;
-        font-size: 1.1rem;
-        color: white;
-        font-weight: 600;
-    }
-    
-    .bot-info p {
-        margin: 0;
-        font-size: 0.8rem;
-        color: #00ff88;
-    }
-    
-    /* Chat Messages */
+    /* Message Styling */
     .stChatMessage {
-        background-color: transparent !important;
+        background-color: transparent;
+        border-bottom: 1px solid #f0f0f0;
+        padding: 1.5rem 0;
     }
     
     div[data-testid="stChatMessageContent"] {
-        background-color: #1a1a1a !important;
-        color: #e0e0e0 !important;
-        border-radius: 15px !important;
-        padding: 15px !important;
-        border: 1px solid #333;
+        background-color: transparent !important;
+        color: #333 !important;
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+    
+    /* Assistant Message Specifics */
+    div[data-testid="stChatMessageContent"][aria-label="assistant"] {
+        font-family: 'Merriweather', serif;
     }
     
     /* User Message Specifics */
     div[data-testid="stChatMessageContent"][aria-label="user"] {
-        background-color: #2d2d2d !important;
+        background-color: #f5f5f5 !important;
+        border-radius: 10px;
+        padding: 1rem !important;
+        font-family: 'Inter', sans-serif; /* Sans-serif for user input */
     }
-
-    /* Input Area Styling */
+    
+    /* Input Area */
     .stChatInputContainer {
-        padding-bottom: 20px;
+        padding-bottom: 30px;
+        max-width: 900px;
+        margin: 0 auto;
     }
     
     div[data-testid="stChatInput"] {
-        background-color: #1a1a1a !important;
-        border-color: #333 !important;
-        color: white !important;
-        border-radius: 30px !important;
+        border-radius: 50px !important;
+        border: 1px solid #ddd !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
     }
     
-    /* Logout Button */
-    .logout-btn {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 9999;
-    }
-    
-    /* Source Card */
+    /* Verse Card */
     .source-card {
-        background-color: #222;
-        border-left: 3px solid #00b4db;
-        padding: 10px;
-        margin-top: 10px;
-        font-size: 0.85rem;
-        color: #ccc;
-    }
-
-    /* Fix Text Readability globally */
-    h1, h2, h3, p, label, .stMarkdown {
-        color: #ffffff !important;
-    }
-
-    /* Login Form Specifics */
-    div[data-testid="stForm"] {
-        background-color: rgba(0, 0, 0, 0.5);
-        padding: 30px;
-        border-radius: 15px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    }
-
-    /* Input Fields - Make them white with black text for contrast */
-    input[type="text"], input[type="password"] {
-        color: #000000 !important;
-        background-color: #ffffff !important;
-        border-radius: 5px !important;
+        background-color: #fff9f0; /* Warm paper color */
+        border-left: 4px solid #8B0000;
+        padding: 15px;
+        margin-top: 15px;
+        font-family: 'Merriweather', serif;
+        font-style: italic;
+        color: #555;
     }
     
-    /* Button Styling */
+    /* Login Form Clean Style */
+    div[data-testid="stForm"] {
+        background-color: white;
+        padding: 40px;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border: 1px solid #eee;
+    }
+    
+    h1, h2, h3 {
+        color: #333 !important;
+    }
+    
     .stButton button {
-        background: linear-gradient(45deg, #00b4db, #0083b0) !important;
+        background-color: #8B0000 !important;
         color: white !important;
-        border: none !important;
-        font-weight: bold !important;
+        border-radius: 5px !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -168,47 +140,47 @@ if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
 if not st.session_state.logged_in:
-    st.markdown('<h1 class="main-header">🔒 Login Required</h1>', unsafe_allow_html=True)
-    
-    col1, col2, col3 = st.columns([1, 2, 1])
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1, 1.5, 1])
     with col2:
+        st.markdown("<h1 style='text-align: center; color: #8B0000;'>Bible RAG Login</h1>", unsafe_allow_html=True)
         with st.form("login_form"):
-            st.markdown("### Please Sign In")
-            username = st.text_input("Username / Email")
+            username = st.text_input("Email")
             password = st.text_input("Password", type="password")
-            submitted = st.form_submit_button("Login", use_container_width=True)
+            submitted = st.form_submit_button("Sign In", use_container_width=True)
             
             if submitted:
                 if username == "matv001@madhatv.in" and password == "matv@001":
                     st.session_state.logged_in = True
                     st.rerun()
                 else:
-                    st.error("Incorrect username or password")
+                    st.error("Invalid credentials")
     st.stop()
 
-# Logout Button (Top Right)
-col1, col2 = st.columns([6, 1])
-with col2:
-    if st.button("Logout", key="logout_top"):
-        st.session_state.logged_in = False
-        st.rerun()
-
-# Custom Header (Simulating the image)
+# Navbar / Header
 st.markdown("""
-<div class="chat-header">
-    <div class="bot-avatar">✝️</div>
-    <div class="bot-info">
-        <h3>Bible Bot</h3>
-        <p>Active Now</p>
+<div class="navbar">
+    <div class="logo">
+        <span>📖</span> Tamil Bible RAG
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# Initialize Chat History
+# Logout Button (Top Right)
+col1, col2 = st.columns([8, 1])
+with col2:
+    if st.button("Sign Out", key="logout_btn"):
+        st.session_state.logged_in = False
+        st.rerun()
+
+# Welcome Message
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "வணக்கம்! நான் உங்கள் விவிலிய உதவியாளர். நீங்கள் என்ன தெரிந்து கொள்ள விரும்புகிறீர்கள்? (Hello! I am your Bible assistant. What would you like to know?)"}
+        {"role": "assistant", "content": "Welcome. How can I help you explore the Scriptures today?"}
     ]
+
+# Main Chat Container
+st.markdown('<div class="main-container">', unsafe_allow_html=True)
 
 # Display Chat History
 for message in st.session_state.messages:
