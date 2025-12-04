@@ -94,9 +94,16 @@ for message in st.session_state.messages:
 
 
 # Initialize Embeddings (must match ingest.py)
+import torch
+
 @st.cache_resource
 def get_embeddings():
-    return HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    st.sidebar.info(f"Using device: {device.upper()}")
+    return HuggingFaceEmbeddings(
+        model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+        model_kwargs={'device': device}
+    )
 
 embeddings = get_embeddings()
 

@@ -86,7 +86,13 @@ def ingest_data():
 
     # Create Embeddings
     print("Creating embeddings (this may take a while)...")
-    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+    import torch
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(f"Using device: {device.upper()}")
+    embeddings = HuggingFaceEmbeddings(
+        model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+        model_kwargs={'device': device}
+    )
 
     # Store in Chroma
     if os.path.exists(DB_PATH):
