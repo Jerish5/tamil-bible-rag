@@ -2,11 +2,12 @@ langchain==0.2.16
 langchain-community==0.2.16
 langchain-core==0.2.38
 langchain-google-genai==1.0.10
-chromadb
+chromadb==0.5.3
 pypdf
 python-dotenv
 streamlit
 sentence-transformers
-pysqlite3-binary
 duckduckgo-search
 extra-streamlit-components
+langchain-openai
+pysqlite3-binary

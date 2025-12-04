@@ -9,6 +9,7 @@ import os
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
 from langchain.chains import RetrievalQA, LLMChain
 from langchain.prompts import PromptTemplate
 from langchain_community.tools import DuckDuckGoSearchRun
@@ -23,6 +24,9 @@ load_dotenv()
 # Load from Streamlit secrets if not in env (for Cloud deployment)
 if "GOOGLE_API_KEY" not in os.environ and "GOOGLE_API_KEY" in st.secrets:
     os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
+
+if "DEEPSEEK_API_KEY" not in os.environ and "DEEPSEEK_API_KEY" in st.secrets:
+    os.environ["DEEPSEEK_API_KEY"] = st.secrets["DEEPSEEK_API_KEY"]
 
 
 
@@ -141,47 +145,57 @@ vectorstore = Chroma(persist_directory=DB_PATH, embedding_function=embeddings)
 retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
 
 # QA Chain Setup
-if "GOOGLE_API_KEY" in os.environ:
+# QA Chain Setup
+llm = None
+if "DEEPSEEK_API_KEY" in os.environ:
+    llm = ChatOpenAI(
+        model='deepseek-chat', 
+        api_key=os.environ.get("DEEPSEEK_API_KEY"), 
+        base_url='https://api.deepseek.com',
+        temperature=0.3
+    )
+elif "GOOGLE_API_KEY" in os.environ:
     llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.3)
+
+if llm:
     
-    # Custom Prompt for Bible RAG with JSON Output
+    # High-Quality Tamil Roman Catholic Prompt (Theology Teacher Persona)
     customer_prompt = """
-    You are a Bible expert assistant specializing in the Tamil Common Bible.
+    You are a knowledgeable Roman Catholic Theology Teacher (கத்தோலிக்க இறையியல் ஆசிரியர்).
+    Your goal is to provide accurate, spiritually enriching answers based on the Tamil Common Bible (திருவிவிலியம்) and Catholic Tradition.
+
+    **Core Instructions:**
+    1. **Persona**: Speak with the authority and clarity of a Catechism teacher. Use formal, clear Tamil.
+    2. **Priority**: ALWAYS check the provided **Context** first. If the answer is there, use it.
+    3. **Fallback**: If the answer is NOT in the context, use your **General Knowledge** as a Catholic scholar.
+
+    **Theological & Historical Context (Apply where relevant):**
+    - **Divine Inspiration**: Explain that God is the primary author, but He revealed concepts through human authors who wrote in their own style, language, and social context (சமுதாயச் சூழல், மொழி நடை).
+    - **Unity vs. Diversity**: The Bible is ONE book (Unity) but also a "Library/Collection" (நூலகம்/தொகுப்பு) of **73 Books** (46 Old Testament + 27 New Testament).
+    - **Timeline**: Mention the span from **10th Century BC to 1st Century AD**.
+    - **Formation**: Explain the transition from **Oral Tradition (வாய்மொழி மரபு)** to **Written Text (எழுத்து வடிவம்)**.
+
+    **Response Format (Markdown):**
     
-    **Role & Tone:**
-    - You must act as a knowledgeable Roman Catholic Bible scholar.
-    - Use strict "Roman Catholic Tamil" terminology (e.g., use 'Thiruviliyam' for Bible).
-    - Your response MUST be in **valid JSON format** strictly adhering to the schema below.
-    - Do not include any markdown formatting (like ```json) outside the JSON object. Just return the raw JSON.
+    ### 💡 சுருக்கம் (Summary)
+    [Provide a direct, concise 2-3 line answer in Tamil]
 
-    **JSON Schema:**
-    {{
-      "summary": "A 2-3 line concise answer in Tamil.",
-      "explanation": "A detailed, multi-paragraph explanation based on the context. Use clear Tamil.",
-      "verses": [
-         {{"reference": "Book Chapter:Verse", "text": "Verse text in Tamil..."}}
-      ],
-      "suggestions": [
-         "Next question suggestion 1",
-         "Next question suggestion 2",
-         "Next question suggestion 3"
-      ]
-    }}
+    ### 📝 விளக்கம் (Explanation)
+    [Provide a detailed, structured explanation. Incorporate the historical/theological context mentioned above if relevant to the question.]
 
-    **Rules:**
-    1. **Context Only**: Use ONLY the provided context to answer. If the answer is not in the context, set "summary" to "I don't know" and leave others empty.
-    2. **Verses**: Extract verses mentioned in the context. Ensure the reference matches the text.
-    3. **Counting**: If asked to count, analyze the context first, then provide the count in the "summary" and details in "explanation".
+    ### 📖 இறைவார்த்தைகள் (Verses)
+    [Quote relevant verses. If from Context, use **Book Chapter:Verse**. If from General Knowledge, cite the reference clearly.]
 
     Context:
     {context}
 
     Question: {question}
 
-    Answer (JSON):"""
-    
+    Answer:"""
+
     QA_CHAIN_PROMPT = PromptTemplate.from_template(customer_prompt)
-    
+
+    # Standard QA Chain with Custom Prompt
     qa_chain = RetrievalQA.from_chain_type(
         llm=llm,
         chain_type="stuff",
@@ -199,101 +213,25 @@ if "GOOGLE_API_KEY" in os.environ:
 
         # Generate Answer
         with st.chat_message("assistant"):
-            with st.spinner("Searching the Scriptures..."):
+            with st.spinner("Searching..."):
                 try:
                     result = qa_chain({"query": prompt})
-                    raw_answer = result["result"]
+                    answer = result["result"]
                     source_docs = result["source_documents"]
                     
-                    # Try to parse JSON
-                    import json
-                    try:
-                        # Clean up potential markdown code blocks if the LLM adds them
-                        clean_answer = raw_answer.replace("```json", "").replace("```", "").strip()
-                        data = json.loads(clean_answer)
-                        
-                        # Check for fallback triggers in the summary
-                        lower_summary = data.get("summary", "").lower()
-                        triggers = [
-                            "don't know", "do not know", "not found", "not mentioned",
-                            "தெரியவில்லை", "தகவல் இல்லை", "குறிப்பிடப்படவில்லை", "பதில் இல்லை", "இல்லை"
-                        ]
-                        
-                        if any(trigger in lower_summary for trigger in triggers):
-                            raise ValueError("Answer not found in context")
-
-                        # 1. Display Summary
-                        st.subheader("💡 சுருக்கம் (Summary)")
-                        st.info(data.get("summary", ""))
-                        
-                        # 2. Display Explanation
-                        st.subheader("📝 விளக்கம் (Explanation)")
-                        st.write(data.get("explanation", ""))
-                        
-                        # 3. Display Verses (from JSON or Context)
-                        st.subheader("📖 இறைவார்த்தைகள் (Verses)")
-                        
-                        # Prefer verses from JSON if available and valid, otherwise fallback to source docs
-                        json_verses = data.get("verses", [])
-                        if json_verses:
-                            for verse in json_verses:
-                                ref = verse.get("reference", "Unknown")
-                                text = verse.get("text", "")
-                                st.markdown(f"**{ref}**")
-                                st.markdown(f"> {text}")
-                        else:
-                            # Fallback to source docs if JSON verses are empty
-                            for doc in source_docs:
-                                content = doc.page_content
-                                clean_content = content.split(" - ")[-1] if " - " in content else content
-                                st.markdown(f"> {clean_content}")
-
-                        # 4. Display Suggestions
-                        suggestions = data.get("suggestions", [])
-                        if suggestions:
-                            st.subheader("🔍 அடுத்து என்ன கேட்கலாம்? (Suggestions)")
-                            cols = st.columns(len(suggestions))
-                            for i, suggestion in enumerate(suggestions):
-                                # Note: Buttons in chat history might not be clickable in the same way, 
-                                # but they serve as visual prompts.
-                                st.button(suggestion, key=f"sugg_{i}")
-
-                        # Save structured response to history (as formatted HTML/Markdown)
-                        # We reconstruct a nice string for the history
-                        history_content = f"**Summary:** {data.get('summary')}\n\n**Explanation:** {data.get('explanation')}"
-                        st.session_state.messages.append({"role": "assistant", "content": history_content})
-
-                    except (json.JSONDecodeError, ValueError):
-                        # Fallback to Web Search or Raw Text if JSON fails or answer not found
-                        st.warning("Answer not found in Bible context or format error. Searching the web...")
-                        
-                        search = DuckDuckGoSearchRun()
-                        web_results = search.run(prompt)
-                        
-                        web_template = """You are a helpful assistant. The user asked a question that wasn't found in the Bible database.
-                        Here is some information from the web:
-                        {web_context}
-                        
-                        Question: {question}
-                        
-                        Answer based on the web info (cite source as 'Web Search'). Answer in the SAME language as the question.
-                        **CRITICAL**: All Tamil answers MUST be in **Roman Catholic Tamil style** (e.g., use 'Thiruviliyam' for Bible, and standard Catholic terminology)."""
-                        
-                        prompt_web = PromptTemplate.from_template(web_template)
-                        chain_web = LLMChain(llm=llm, prompt=prompt_web)
-                        
-                        web_response = chain_web.run(web_context=web_results, question=prompt)
-                        
-                        st.markdown("### Web Answer")
-                        st.write(web_response)
-                        st.markdown("\n\n*Source: Web Search*")
-                        
-                        st.session_state.messages.append({"role": "assistant", "content": web_response + "\n\n*Source: Web Search*"})
+                    st.write(answer)
+                    
+                    # Optional: Show sources
+                    with st.expander("Source Documents"):
+                        for doc in source_docs:
+                            st.write(doc.page_content)
+                            
+                    st.session_state.messages.append({"role": "assistant", "content": answer})
                             
                 except Exception as e:
                     st.error(f"An error occurred: {e}")
 else:
-    st.error("⚠️ GOOGLE_API_KEY not found!")
+    st.error("⚠️ No API Key found! Please set DEEPSEEK_API_KEY or GOOGLE_API_KEY.")
     st.markdown("""
     ### How to fix this on Streamlit Cloud:
     1. Click **Manage App** in the bottom right corner.
@@ -301,7 +239,9 @@ else:
     3. Go to the **Secrets** section.
     4. Paste your API key in this format:
     ```toml
-    GOOGLE_API_KEY = "your_actual_api_key_here"
+    DEEPSEEK_API_KEY = "your_deepseek_api_key_here"
+    # OR
+    GOOGLE_API_KEY = "your_google_api_key_here"
     ```
     5. Click **Save**.
     """)
